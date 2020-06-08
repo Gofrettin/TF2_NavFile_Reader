@@ -13,16 +13,16 @@ public:
         if (!szLevelname)
             return;
 
-//        m_mapName = std::string("tf/");
-//        std::string map(szLevelname);
+        //        m_mapName = std::string("tf/");
+        //        std::string map(szLevelname);
 
-//        if (map.find("maps/") == std::string::npos)
-//            m_mapName.append("maps/");
+        //        if (map.find("maps/") == std::string::npos)
+        //            m_mapName.append("maps/");
 
-//        m_mapName.append(szLevelname);
-//        int dotpos = m_mapName.find('.');
-//        m_mapName  = m_mapName.substr(0, dotpos);
-//        m_mapName.append(".nav");
+        //        m_mapName.append(szLevelname);
+        //        int dotpos = m_mapName.find('.');
+        //        m_mapName  = m_mapName.substr(0, dotpos);
+        //        m_mapName.append(".nav");
         m_mapName.append(szLevelname);
 
         std::ifstream fs(m_mapName, std::ios::binary);
@@ -99,13 +99,10 @@ public:
             area.m_center[1] = (area.m_nwCorner[1] + area.m_seCorner[1]) / 2.0f;
             area.m_center[2] = (area.m_nwCorner[2] + area.m_seCorner[2]) / 2.0f;
 
-            if ((area.m_seCorner.x - area.m_nwCorner.x) > 0.0f &&
-                (area.m_seCorner.y - area.m_nwCorner.y) > 0.0f)
+            if ((area.m_seCorner.x - area.m_nwCorner.x) > 0.0f && (area.m_seCorner.y - area.m_nwCorner.y) > 0.0f)
             {
-                area.m_invDxCorners =
-                    1.0f / (area.m_seCorner.x - area.m_nwCorner.x);
-                area.m_invDzCorners =
-                    1.0f / (area.m_seCorner.z - area.m_nwCorner.z);
+                area.m_invDxCorners = 1.0f / (area.m_seCorner.x - area.m_nwCorner.x);
+                area.m_invDzCorners = 1.0f / (area.m_seCorner.z - area.m_nwCorner.z);
             }
             else
                 area.m_invDxCorners = area.m_invDzCorners = 0.0f;
@@ -206,9 +203,8 @@ public:
 
             fs.read((char *) &area.m_inheritVisibilityFrom, sizeof(uint32_t));
 
-            // Unknown 4 bytes
-            uint32_t unk;
-            fs.read((char *) &unk, sizeof(uint32_t));
+            // TF2 Specific area flags
+            fs.read((char *) &area.m_TFattributeFlags, sizeof(uint32_t));
 
             m_areas.push_back(area);
         }
@@ -222,8 +218,7 @@ public:
         {
             CNavArea &area = *it;
 
-            for (auto it2 = area.m_connections.begin();
-                 it2 != area.m_connections.end(); it2++)
+            for (auto it2 = area.m_connections.begin(); it2 != area.m_connections.end(); it2++)
             {
                 NavConnect &connection = *it2;
 
@@ -239,8 +234,7 @@ public:
             }
 
             // Fill potentially visible areas as well
-            for (auto it2 = area.m_potentiallyVisibleAreas.begin();
-                 it2 != area.m_potentiallyVisibleAreas.end(); it2++)
+            for (auto it2 = area.m_potentiallyVisibleAreas.begin(); it2 != area.m_potentiallyVisibleAreas.end(); it2++)
             {
                 AreaBindInfo &bindinfo = *it2;
 
