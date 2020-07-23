@@ -217,8 +217,8 @@ public:
     Vector m_center;
     float m_invDzCorners;
     float m_invDxCorners;
-    float m_neY;
-    float m_swY;
+    float m_neZ;
+    float m_swZ;
     float m_minZ;
     float m_maxZ;
     std::vector<NavConnect> m_connections;
@@ -230,7 +230,6 @@ public:
     float m_lightIntensity[NUM_CORNERS];
     uint32_t m_visibleAreaCount;
     uint32_t m_inheritVisibilityFrom;
-    uint32_t m_TFattributeFlags;
     std::vector<AreaBindInfo> m_potentiallyVisibleAreas;
 
     // Check if the given point is overlapping the area
@@ -266,6 +265,73 @@ public:
 
         return true;
     }
+
+    inline const Vector getSwCorner() const
+    {
+        return { m_nwCorner.x, m_seCorner.y, m_swZ };
+    }
+    inline const Vector getNeCorner() const
+    {
+        return { m_seCorner.x, m_nwCorner.y, m_neZ };
+    }
+
+    const Vector getNearestEdge(Vector2D &point) const
+    {
+        Vector combinations[] = {
+            // NW NE
+            (m_nwCorner + getNeCorner()) / 2,
+            // NE SE
+            (getNeCorner() + m_seCorner) / 2,
+            // SE SW
+            (m_seCorner + getSwCorner()) / 2,
+            // SW NW
+            (getSwCorner() + m_nwCorner) / 2,
+        };
+
+        Vector *best;
+        float dist = FLT_MAX;
+        for (Vector &p : combinations)
+        {
+            float dist_to_p = point.DistToSqr(p.AsVector2D());
+            if (dist_to_p < dist)
+            {
+                dist = dist_to_p;
+                best = &p;
+                continue;
+            }
+        }
+
+        return *best;
+    }
+
+    /*const std::pair<Vector, Vector> getNearestEdge(Vector2D &point) const
+    {
+        Vector points[] = { m_seCorner, m_nwCorner, getSwCorner(), getNeCorner() };
+
+        float dist = FLT_MAX, dist2 = FLT_MAX;
+        Vector first, second;
+        for (Vector &p : points)
+        {
+            float dist_to_p = point.DistToSqr(p.AsVector2D());
+            if (dist_to_p < dist)
+            {
+                // Move n1 to n2
+                dist2  = dist;
+                second = first;
+
+                dist  = dist_to_p;
+                first = p;
+                continue;
+            }
+            if (dist_to_p < dist2)
+            {
+                dist2  = dist_to_p;
+                second = p;
+            }
+        }
+
+        return std::pair(first, second);
+    }*/
 };
 
 struct NavConnect

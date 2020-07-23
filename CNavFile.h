@@ -92,8 +92,8 @@ public:
             fs.read((char *) &area.m_attributeFlags, sizeof(uint32_t));
             fs.read((char *) &area.m_nwCorner, sizeof(Vector));
             fs.read((char *) &area.m_seCorner, sizeof(Vector));
-            fs.read((char *) &area.m_neY, sizeof(float));
-            fs.read((char *) &area.m_swY, sizeof(float));
+            fs.read((char *) &area.m_neZ, sizeof(float));
+            fs.read((char *) &area.m_swZ, sizeof(float));
 
             area.m_center[0] = (area.m_nwCorner[0] + area.m_seCorner[0]) / 2.0f;
             area.m_center[1] = (area.m_nwCorner[1] + area.m_seCorner[1]) / 2.0f;
