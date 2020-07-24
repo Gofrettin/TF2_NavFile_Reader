@@ -212,6 +212,7 @@ class CNavArea
 public:
     uint32_t m_id;
     int32_t m_attributeFlags;
+    int32_t m_TFattributeFlags;
     Vector m_nwCorner;
     Vector m_seCorner;
     Vector m_center;
