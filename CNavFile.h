@@ -102,10 +102,10 @@ public:
             if ((area.m_seCorner.x - area.m_nwCorner.x) > 0.0f && (area.m_seCorner.y - area.m_nwCorner.y) > 0.0f)
             {
                 area.m_invDxCorners = 1.0f / (area.m_seCorner.x - area.m_nwCorner.x);
-                area.m_invDzCorners = 1.0f / (area.m_seCorner.z - area.m_nwCorner.z);
+                area.m_invDyCorners = 1.0f / (area.m_seCorner.y - area.m_nwCorner.y);
             }
             else
-                area.m_invDxCorners = area.m_invDzCorners = 0.0f;
+                area.m_invDxCorners = area.m_invDyCorners = 0.0f;
 
             // Change the tolerance if you wish
             area.m_minZ = min(area.m_seCorner.z, area.m_nwCorner.z) - 18.f;

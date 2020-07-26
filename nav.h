@@ -216,8 +216,8 @@ public:
     Vector m_nwCorner;
     Vector m_seCorner;
     Vector m_center;
-    float m_invDzCorners;
     float m_invDxCorners;
+    float m_invDyCorners;
     float m_neZ;
     float m_swZ;
     float m_minZ;
@@ -276,63 +276,46 @@ public:
         return { m_seCorner.x, m_nwCorner.y, m_neZ };
     }
 
-    const Vector getNearestEdge(Vector2D &point) const
+    float GetZ(float x, float y) const
     {
-        Vector combinations[] = {
-            // NW NE
-            (m_nwCorner + getNeCorner()) / 2,
-            // NE SE
-            (getNeCorner() + m_seCorner) / 2,
-            // SE SW
-            (m_seCorner + getSwCorner()) / 2,
-            // SW NW
-            (getSwCorner() + m_nwCorner) / 2,
-        };
+        // guard against division by zero due to degenerate areas
+        if (m_invDxCorners == 0.0f || m_invDyCorners == 0.0f)
+            return m_neZ;
 
-        Vector *best;
-        float dist = FLT_MAX;
-        for (Vector &p : combinations)
-        {
-            float dist_to_p = point.DistToSqr(p.AsVector2D());
-            if (dist_to_p < dist)
-            {
-                dist = dist_to_p;
-                best = &p;
-                continue;
-            }
-        }
+        float u = (x - m_nwCorner.x) * m_invDxCorners;
+        float v = (y - m_nwCorner.y) * m_invDyCorners;
 
-        return *best;
+        // clamp Z values to (x,y) volume
+
+        u = fsel(u, u, 0);           // u >= 0 ? u : 0
+        u = fsel(u - 1.0f, 1.0f, u); // u >= 1 ? 1 : u
+
+        v = fsel(v, v, 0);           // v >= 0 ? v : 0
+        v = fsel(v - 1.0f, 1.0f, v); // v >= 1 ? 1 : v
+
+        float northZ = m_nwCorner.z + u * (m_neZ - m_nwCorner.z);
+        float southZ = m_swZ + u * (m_seCorner.z - m_swZ);
+
+        return northZ + v * (southZ - northZ);
     }
 
-    /*const std::pair<Vector, Vector> getNearestEdge(Vector2D &point) const
+    const Vector getNearestPoint(Vector2D &point) const
     {
-        Vector points[] = { m_seCorner, m_nwCorner, getSwCorner(), getNeCorner() };
+        Vector close(0.0f);
+        float x, y, z;
 
-        float dist = FLT_MAX, dist2 = FLT_MAX;
-        Vector first, second;
-        for (Vector &p : points)
-        {
-            float dist_to_p = point.DistToSqr(p.AsVector2D());
-            if (dist_to_p < dist)
-            {
-                // Move n1 to n2
-                dist2  = dist;
-                second = first;
+        // Using fsel rather than compares, because it is slightly faster
+        x = fsel(point.x - m_nwCorner.x, point.x, m_nwCorner.x);
+        x = fsel(x - m_seCorner.x, m_seCorner.x, x);
 
-                dist  = dist_to_p;
-                first = p;
-                continue;
-            }
-            if (dist_to_p < dist2)
-            {
-                dist2  = dist_to_p;
-                second = p;
-            }
-        }
+        y = fsel(point.y - m_nwCorner.y, point.y, m_nwCorner.y);
+        y = fsel(y - m_seCorner.y, m_seCorner.y, y);
 
-        return std::pair(first, second);
-    }*/
+        z = GetZ(x, y);
+
+        close.Init(x, y, z);
+        return close;
+    }
 };
 
 struct NavConnect
